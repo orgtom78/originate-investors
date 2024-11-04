@@ -1,3 +1,9 @@
 {
-  "/(dashboard)/home/page": "app/(dashboard)/home/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/[...not-found]/page": "app/[...not-found]/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/(dashboard)/about/page": "app/(dashboard)/about/page.js",
+  "/(dashboard)/home/page": "app/(dashboard)/home/page.js",
+  "/(blank-layout-pages)/login/page": "app/(blank-layout-pages)/login/page.js",
+  "/(blank-layout-pages)/register/page": "app/(blank-layout-pages)/register/page.js"
 }
