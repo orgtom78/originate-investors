@@ -63,6 +63,10 @@ const StepPersonalInfo = ({ handleNext, handlePrev }: { handleNext: () => void; 
             </Select>
           </FormControl>
         </Grid>
+        <div>
+ <iframe src="https://sign.zoho.com/signform?form_link=234b4d535f4956235ea5336028b9d29019581f38fb04a5ff8172d1f462e1a6e1ef05e357fc5a99e6729f07eb010121763e85bba80f7512600b1d33514e8478996dcf46c0922d4132#" width="80%" height="80%"></iframe>
+</div>
+
         <Grid item xs={12} className='flex justify-between'>
           <Button
             variant='outlined'
