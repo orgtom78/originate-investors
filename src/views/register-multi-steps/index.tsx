@@ -32,6 +32,7 @@ import StepperCustomDot from '@components/stepper-dot'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import input from '@/@core/theme/overrides/input'
 
 // Util Imports
 //import { getLocalizedUrl } from '@/utils/i18n'
@@ -85,10 +86,10 @@ const getStepContent = (step: number, handleNext: () => void, handlePrev: () => 
 const RegisterMultiSteps = () => {
   // States
   const [activeStep, setActiveStep] = useState<number>(0)
+  const [formValues, setFormValues] = useState<object>();
 
   // Hooks
   const { settings } = useSettings()
-  const { lang: locale } = useParams()
 
   // Handle Stepper
   const handleNext = () => {

@@ -18,6 +18,6 @@ export default  async function AuthGuard({ children }: ChildrenType ) {
   return <>{NextResponse.json({ user }) ? children : <AuthRedirect />}</>;
 } catch (error) {
     console.error(error);
-    return redirect(`/login`);
+    return redirect(`/register`);
   }
 }

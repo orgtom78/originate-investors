@@ -12,13 +12,10 @@ import InputAdornment from '@mui/material/InputAdornment'
 // Component Imports
 import DirectionalIcon from '@components/DirectionalIcon'
 
-//Amplify imports
-import type { Schema } from '../../../amplify/data/resource'
-import { generateClient } from 'aws-amplify/data'
+//mutation import 
+import createuser from '@data/mutations/createuser'
 
-const client = generateClient<Schema>()
-
-const StepAccountDetails = async ({ handleNext }: { handleNext: () => void }) => {
+const StepAccountDetails = ({ handleNext }: { handleNext: () => void }) => {
     // States
     const [isPasswordShown, setIsPasswordShown] = useState<boolean>(false)
     const [isConfirmPasswordShown, setIsConfirmPasswordShown] = useState<boolean>(false)
@@ -30,39 +27,11 @@ const StepAccountDetails = async ({ handleNext }: { handleNext: () => void }) =>
     const handleClickShowConfirmPassword = () => {
       setIsConfirmPasswordShown(!isConfirmPasswordShown)
     }
-  /**
-  const { nextStep: signUpNextStep } = await signUp({
-    username: 'james',
-    options: {
-      userAttributes: {
-        email: 'james@example.com',
-      },
-    },
-  });
-  
-  if (signUpNextStep.signUpStep === 'DONE') {
-    console.log(`SignUp Complete`);
-  }
-  
-  if (signUpNextStep.signUpStep === 'CONFIRM_SIGN_UP') {
-    console.log(
-      `Code Delivery Medium: ${signUpNextStep.codeDeliveryDetails.deliveryMedium}`,
-    );
-    console.log(
-      `Code Delivery Destination: ${signUpNextStep.codeDeliveryDetails.destination}`,
-    );
-  }
-  
-  // Confirm sign up with the OTP received
-  const { nextStep: confirmSignUpNextStep } = await confirmSignUp({
-    username: 'james',
-    confirmationCode: '123456',
-  });
-  
-  if (confirmSignUpNextStep.signUpStep === 'DONE') {
-    console.log(`SignUp Complete`);
-  }
-  */
+
+    function twofunctions(){
+      createuser('test');
+      handleNext
+    }
 
   return (
     <>
@@ -141,7 +110,7 @@ const StepAccountDetails = async ({ handleNext }: { handleNext: () => void }) =>
           </Button>
           <Button
             variant='contained'
-            onClick={handleNext}
+            onClick={twofunctions}
             endIcon={<DirectionalIcon ltrIconClass='ri-arrow-right-line' rtlIconClass='ri-arrow-left-line' />}
           >
             Next
