@@ -9,7 +9,7 @@ and "delete" any "Todo" records.
 const schema = a.schema({
   Todo: a
     .model({
-      content: a.string(),
+      username: a.string(),
     })
     .authorization((allow) => [allow.guest()]),
 });
