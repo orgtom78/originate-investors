@@ -12,9 +12,9 @@ const backend = defineBackend({
   myDynamoDBFunction,
 });
 
-const todoTable = backend.data.resources.tables["Todo"];
+const userTable = backend.data.resources.tables["User"];
 const policy = new Policy(
-  Stack.of(todoTable),
+  Stack.of(userTable),
   "MyDynamoDBFunctionStreamingPolicy",
   {
     statements: [
@@ -34,11 +34,11 @@ const policy = new Policy(
 backend.myDynamoDBFunction.resources.lambda.role?.attachInlinePolicy(policy);
 
 const mapping = new EventSourceMapping(
-  Stack.of(todoTable),
+  Stack.of(userTable),
   "MyDynamoDBFunctionTodoEventStreamMapping",
   {
     target: backend.myDynamoDBFunction.resources.lambda,
-    eventSourceArn: todoTable.tableStreamArn,
+    eventSourceArn: userTable.tableStreamArn,
     startingPosition: StartingPosition.LATEST,
   }
 );

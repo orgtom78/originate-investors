@@ -1,92 +1,260 @@
+import React, { useState } from "react";
 // MUI Imports
-import Grid from '@mui/material/Grid'
-import Button from '@mui/material/Button'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
-import Select from '@mui/material/Select'
-import MenuItem from '@mui/material/MenuItem'
-import InputAdornment from '@mui/material/InputAdornment'
+import Grid from "@mui/material/Grid";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
 // Component Imports
-import DirectionalIcon from '@components/DirectionalIcon'
+import DirectionalIcon from "@components/DirectionalIcon";
 
-const StepPersonalInfo = ({ handleNext, handlePrev }: { handleNext: () => void; handlePrev: () => void }) => {
+const US_STATES = [
+  "Alabama",
+  "Alaska",
+  "Arizona",
+  "Arkansas",
+  "California",
+  "Colorado",
+  "Connecticut",
+  "Delaware",
+  "Florida",
+  "Georgia",
+  "Hawaii",
+  "Idaho",
+  "Illinois",
+  "Indiana",
+  "Iowa",
+  "Kansas",
+  "Kentucky",
+  "Louisiana",
+  "Maine",
+  "Maryland",
+  "Massachusetts",
+  "Michigan",
+  "Minnesota",
+  "Mississippi",
+  "Missouri",
+  "Montana",
+  "Nebraska",
+  "Nevada",
+  "New Hampshire",
+  "New Jersey",
+  "New Mexico",
+  "New York",
+  "North Carolina",
+  "North Dakota",
+  "Ohio",
+  "Oklahoma",
+  "Oregon",
+  "Pennsylvania",
+  "Rhode Island",
+  "South Carolina",
+  "South Dakota",
+  "Tennessee",
+  "Texas",
+  "Utah",
+  "Vermont",
+  "Virginia",
+  "Washington",
+  "West Virginia",
+  "Wisconsin",
+  "Wyoming",
+];
+
+const OECD_COUNTRIES = [
+  "Australia",
+  "Austria",
+  "Belgium",
+  "Canada",
+  "Chile",
+  "Colombia",
+  "Czech Republic",
+  "Denmark",
+  "Estonia",
+  "Finland",
+  "France",
+  "Germany",
+  "Greece",
+  "Hungary",
+  "Iceland",
+  "Ireland",
+  "Israel",
+  "Italy",
+  "Japan",
+  "Korea",
+  "Latvia",
+  "Lithuania",
+  "Luxembourg",
+  "Mexico",
+  "Netherlands",
+  "New Zealand",
+  "Norway",
+  "Poland",
+  "Portugal",
+  "Slovak Republic",
+  "Slovenia",
+  "Spain",
+  "Sweden",
+  "Switzerland",
+  "Turkey",
+  "United Kingdom",
+  "United States",
+];
+
+const ACCOUNT_TYPES = ["Individual", "Joint", "Corporation", "Trust", "IRA"];
+
+const StepPersonalInfo = ({
+  handleNext,
+  handlePrev,
+}: {
+  handleNext: () => void;
+  handlePrev: () => void;
+}) => {
+  const [accountType, setAccountType] = useState<string>("Individual");
+
+  const handleAccountTypeChange = (event: SelectChangeEvent<string>) => {
+    setAccountType(event.target.value);
+  };
+
+  const renderPersonalInfoFields = (InvestorNumber: number) => (
+    <>
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          label={`Investor ${InvestorNumber} - Full Legal Name`}
+          placeholder="John Doe / The Family Trust LLC"
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          label={`Investor ${InvestorNumber} - Address`}
+          placeholder="1456, Liberty Street"
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label={`Investor ${InvestorNumber} - City`}
+          placeholder="Miami"
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          type="number"
+          label={`Investor ${InvestorNumber} - Zip Code`}
+          placeholder="19901"
+        />
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <FormControl fullWidth>
+          <InputLabel>{`Investor ${InvestorNumber} - State`}</InputLabel>
+          <Select label={`Investor ${InvestorNumber} - State`} defaultValue="">
+            {US_STATES.map((state) => (
+              <MenuItem key={state} value={state}>
+                {state}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <FormControl fullWidth>
+          <InputLabel>{`Investor ${InvestorNumber} - Country`}</InputLabel>
+          <Select
+            label={`Investor ${InvestorNumber} - Country`}
+            defaultValue="United States"
+          >
+            {OECD_COUNTRIES.map((country) => (
+              <MenuItem key={country} value={country}>
+                {country}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label={`Investor ${InvestorNumber} - Date of Birth / Date of Incorporation`}
+          placeholder="MM-DD-YYYY"
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label={`Investor ${InvestorNumber} - TIN or SSN`}
+          placeholder="###-##-####"
+        />
+      </Grid>
+    </>
+  );
+
   return (
     <>
-      <div className='mbe-5'>
-        <Typography variant='h4' className='mbe-1'>
+      <div className="mbe-5">
+        <Typography variant="h4" className="mbe-1">
           Personal Information
         </Typography>
         <Typography>Enter Your Personal Information</Typography>
       </div>
       <Grid container spacing={5}>
-        <Grid item xs={12} sm={6}>
-          <TextField fullWidth label='First Name' placeholder='John' />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField fullWidth label='Last Name' placeholder='Doe' />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            type='number'
-            label='Mobile'
-            placeholder='123-456-7890'
-            InputProps={{
-              startAdornment: <InputAdornment position='start'>US (+1)</InputAdornment>
-            }}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField fullWidth type='number' label='Pin Code' placeholder='689421' />
-        </Grid>
         <Grid item xs={12}>
-          <TextField fullWidth label='Address' placeholder='1456, Liberty Street' />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField fullWidth label='Landmark' placeholder='Nr. Wall Street' />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField fullWidth label='City' placeholder='Miami' />
-        </Grid>
-        <Grid item xs={12} md={6}>
           <FormControl fullWidth>
-            <InputLabel>State</InputLabel>
-            <Select label='State' defaultValue='new-york'>
-              <MenuItem value='new-york'>New York</MenuItem>
-              <MenuItem value='california'>California</MenuItem>
-              <MenuItem value='texas'>Texas</MenuItem>
-              <MenuItem value='florida'>Florida</MenuItem>
-              <MenuItem value='washington'>Washington</MenuItem>
+            <InputLabel>Account Type</InputLabel>
+            <Select
+              label="Account Type"
+              value={accountType}
+              onChange={handleAccountTypeChange}
+            >
+              {ACCOUNT_TYPES.map((type) => (
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Grid>
-        <div>
- <iframe src="https://sign.zoho.com/signform?form_link=234b4d535f4956235ea5336028b9d29019581f38fb04a5ff8172d1f462e1a6e1ef05e357fc5a99e6729f07eb010121763e85bba80f7512600b1d33514e8478996dcf46c0922d4132#" width="80%" height="80%"></iframe>
-</div>
 
-        <Grid item xs={12} className='flex justify-between'>
+        {renderPersonalInfoFields(1)}
+
+        {accountType === "Joint" && renderPersonalInfoFields(2)}
+
+        <Grid item xs={12} className="flex justify-between">
           <Button
-            variant='outlined'
-            color='secondary'
+            variant="outlined"
+            color="secondary"
             onClick={handlePrev}
-            startIcon={<DirectionalIcon ltrIconClass='ri-arrow-left-line' rtlIconClass='ri-arrow-right-line' />}
+            startIcon={
+              <DirectionalIcon
+                ltrIconClass="ri-arrow-left-line"
+                rtlIconClass="ri-arrow-right-line"
+              />
+            }
           >
             Previous
           </Button>
           <Button
-            variant='contained'
+            variant="contained"
             onClick={handleNext}
-            endIcon={<DirectionalIcon ltrIconClass='ri-arrow-right-line' rtlIconClass='ri-arrow-left-line' />}
+            endIcon={
+              <DirectionalIcon
+                ltrIconClass="ri-arrow-right-line"
+                rtlIconClass="ri-arrow-left-line"
+              />
+            }
           >
             Next
           </Button>
         </Grid>
       </Grid>
     </>
-  )
-}
+  );
+};
 
-export default StepPersonalInfo
+export default StepPersonalInfo;

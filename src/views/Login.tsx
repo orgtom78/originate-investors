@@ -112,8 +112,8 @@ const Login = ({ mode }: { mode: Mode }) => {
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     console.log(data.email);
 
-    const createUser = await client.models.Todo.create({
-      username: data.email,
+    const createUser = await client.models.User.create({
+      email: data.email,
     });
 
     console.log(createUser);
