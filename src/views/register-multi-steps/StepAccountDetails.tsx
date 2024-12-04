@@ -16,6 +16,8 @@ import DirectionalIcon from "@components/DirectionalIcon";
 import { generateClient } from "aws-amplify/data";
 import { type Schema } from "../../../amplify/data/resource";
 
+import createuser from "@data/mutations/createuser";
+
 const client = generateClient<Schema>();
 
 type FormData = InferInput<typeof schema>;
@@ -45,6 +47,7 @@ const StepAccountDetails = ({ handleNext }: { handleNext: () => void }) => {
   });
 
   // Function to create user in the database
+  
   const createUserInDB = async (formData: FormData) => {
     try {
       const { data, errors } = await client.models.User.create({

@@ -2,13 +2,14 @@ import { CognitoIdentityServiceProvider } from "aws-sdk";
 import { Logger } from "@aws-lambda-powertools/logger";
 import type { DynamoDBStreamHandler } from "aws-lambda";
 import type { AttributeValue } from "aws-lambda/trigger/dynamodb-stream";
+import { env } from '$amplify/env/dyndbinvestor'; 
 
 const logger = new Logger({ serviceName: "CognitoUserHandler" });
 
 const cognito = new CognitoIdentityServiceProvider();
 
 export const handler: DynamoDBStreamHandler = async (event) => {
-  const userPoolId = process.env.USER_POOL_ID;
+  const userPoolId = env.USER_POOL_ID;
 
   if (!userPoolId) {
     logger.error("USER_POOL_ID environment variable is not set");
