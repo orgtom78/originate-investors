@@ -1,16 +1,21 @@
-import React, { useState } from "react";
-// MUI Imports
-import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-
-// Component Imports
+import React, { useEffect, useState } from "react";
+import {
+  Grid,
+  Button,
+  TextField,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+} from "@mui/material";
+import { Controller, useForm } from "react-hook-form";
+import { valibotResolver } from "@hookform/resolvers/valibot";
+import { object, pipe, string, nonEmpty } from "valibot";
 import DirectionalIcon from "@components/DirectionalIcon";
+import { generateClient } from "aws-amplify/data";
+import { type Schema } from "../../../amplify/data/resource";
 
 const US_STATES = [
   "Alabama",
@@ -63,6 +68,7 @@ const US_STATES = [
   "West Virginia",
   "Wisconsin",
   "Wyoming",
+  "Other",
 ];
 
 const OECD_COUNTRIES = [
@@ -107,154 +113,289 @@ const OECD_COUNTRIES = [
 
 const ACCOUNT_TYPES = ["Individual", "Joint", "Corporation", "Trust", "IRA"];
 
-const StepPersonalInfo = ({
-  handleNext,
-  handlePrev,
-}: {
+const client = generateClient<Schema>();
+
+const schema = object({
+  accounttype: pipe(string(), nonEmpty("Account Type is required")),
+  legalname1: pipe(string(), nonEmpty("Full Legal Name is required")),
+  address1: pipe(string(), nonEmpty("Address is required")),
+  city1: pipe(string(), nonEmpty("City is required")),
+  zip1: pipe(string(), nonEmpty("Zip Code is required")),
+  dob1: pipe(string(), nonEmpty("Date of Birth is required")),
+  tin1: pipe(string(), nonEmpty("TIN or SSN is required")),
+  state1: pipe(string(), nonEmpty("State is required")),
+  country1: pipe(string(), nonEmpty("Country is required")),
+  legalname2: pipe(string()),
+  address2: pipe(string()),
+  city2: pipe(string()),
+  zip2: pipe(string()),
+  dob2: pipe(string()),
+  tin2: pipe(string()),
+  state2: pipe(string()),
+  country2: pipe(string()),
+});
+
+type FormData = {
+  [key: string]: string;
+};
+
+type StepProps = {
   handleNext: () => void;
   handlePrev: () => void;
-}) => {
-  const [accountType, setAccountType] = useState<string>("Individual");
+  formData: Record<string, string>;
+  accountDetails: Record<string, string>;
+  updateFormData: (data: Record<string, string>) => void;
+};
+
+const StepAccountDetails = ({
+  handleNext,
+  handlePrev,
+  formData,
+  accountDetails,
+  updateFormData,
+}: StepProps) => {
+  const {
+    control,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: formData,
+    resolver: valibotResolver(schema),
+  });
+
+  const [accountType, setAccountType] = useState<string>(
+    formData.accounttype || "Individual"
+  );
+
+  // Update formData when account type changes
+  useEffect(() => {
+    if (formData.accounttype !== accountType) {
+      updateFormData({ accounttype: accountType });
+    }
+  }, [accountType]);
 
   const handleAccountTypeChange = (event: SelectChangeEvent<string>) => {
     setAccountType(event.target.value);
   };
 
-  const renderPersonalInfoFields = (InvestorNumber: number) => (
-    <>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label={`Investor ${InvestorNumber} - Full Legal Name`}
-          placeholder="John Doe / The Family Trust LLC"
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label={`Investor ${InvestorNumber} - Address`}
-          placeholder="1456, Liberty Street"
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label={`Investor ${InvestorNumber} - City`}
-          placeholder="Miami"
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          type="number"
-          label={`Investor ${InvestorNumber} - Zip Code`}
-          placeholder="19901"
-        />
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <FormControl fullWidth>
-          <InputLabel>{`Investor ${InvestorNumber} - State`}</InputLabel>
-          <Select label={`Investor ${InvestorNumber} - State`} defaultValue="">
-            {US_STATES.map((state) => (
-              <MenuItem key={state} value={state}>
-                {state}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <FormControl fullWidth>
-          <InputLabel>{`Investor ${InvestorNumber} - Country`}</InputLabel>
-          <Select
-            label={`Investor ${InvestorNumber} - Country`}
-            defaultValue="United States"
-          >
-            {OECD_COUNTRIES.map((country) => (
-              <MenuItem key={country} value={country}>
-                {country}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label={`Investor ${InvestorNumber} - Date of Birth / Date of Incorporation`}
-          placeholder="MM-DD-YYYY"
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label={`Investor ${InvestorNumber} - TIN or SSN`}
-          placeholder="###-##-####"
-        />
-      </Grid>
-    </>
+  // Trigger updateFormData and go to the previous step
+  const handlePrevious = () => {
+    const currentFormData = getValues();
+    updateFormData(currentFormData);
+    handlePrev();
+  };
+
+  const renderTextField = (
+    name: string,
+    label: string,
+    placeholder: string,
+    type = "text"
+  ) => (
+    <Grid item xs={12} sm={6} key={name}>
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            fullWidth
+            label={label}
+            placeholder={placeholder}
+            type={type}
+            error={!!errors[name]}
+            helperText={errors[name]?.message}
+          />
+        )}
+      />
+    </Grid>
   );
 
-  return (
-    <>
-      <div className="mbe-5">
-        <Typography variant="h4" className="mbe-1">
-          Personal Information
-        </Typography>
-        <Typography>Enter Your Personal Information</Typography>
-      </div>
-      <Grid container spacing={5}>
-        <Grid item xs={12}>
+  const renderSelectField = (
+    name: string,
+    label: string,
+    options: string[]
+  ) => (
+    <Grid item xs={12} sm={6} key={name}>
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
           <FormControl fullWidth>
-            <InputLabel>Account Type</InputLabel>
-            <Select
-              label="Account Type"
-              value={accountType}
-              onChange={handleAccountTypeChange}
-            >
-              {ACCOUNT_TYPES.map((type) => (
-                <MenuItem key={type} value={type}>
-                  {type}
+            <InputLabel>{label}</InputLabel>
+            <Select {...field} value={field.value || ""}>
+              {options.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
+        )}
+      />
+    </Grid>
+  );
+
+  const renderPersonalInfoFields = () => (
+    <>
+      {[
+        {
+          name: "legalname2",
+          label: "Full Legal Name",
+          placeholder: "John Doe",
+        },
+        { name: "address2", label: "Address", placeholder: "123 Main St" },
+        { name: "city2", label: "City", placeholder: "New York" },
+        {
+          name: "zip2",
+          label: "Zip Code",
+          placeholder: "10001",
+          type: "number",
+        },
+        { name: "dob2", label: "Date of Birth", placeholder: "MM-DD-YYYY" },
+        { name: "tin2", label: "TIN/SSN", placeholder: "123-45-6789" },
+      ].map(({ name, label, placeholder, type }) =>
+        renderTextField(name, label, placeholder, type)
+      )}
+      {renderSelectField("state2", "State", US_STATES)}
+      {renderSelectField("country2", "Country", OECD_COUNTRIES)}
+    </>
+  );
+
+  const checkUserExists = async (email: string): Promise<string | null> => {
+    try {
+      const { data: users } = await client.models.User.list({
+        filter: { email: { eq: email } },
+      });
+      return users.length > 0 ? users[0].id : null;
+    } catch (error) {
+      console.error("Error checking user existence:", error);
+      return null;
+    }
+  };
+
+  const updateUserInDB = async (data: FormData): Promise<void> => {
+    try {
+      const userExists = await checkUserExists(accountDetails.email);
+      if (userExists) {
+        const updates = {
+          accounttype: data.accounttype,
+          legalname: JSON.stringify({
+            legalname1: data.legalname1,
+            legalname2: data.legalname2,
+          }),
+          address: JSON.stringify({
+            address1: data.address1,
+            address2: data.address2,
+          }),
+          city: JSON.stringify({ city1: data.city1, city2: data.city2 }),
+          zipcode: JSON.stringify({ zip1: data.zip1, zip2: data.zip2 }),
+          state: JSON.stringify({ state1: data.state1, state2: data.state2 }),
+          country: JSON.stringify({
+            country1: data.country1,
+            country2: data.country2,
+          }),
+          dob: JSON.stringify({ dob1: data.dob1, dob2: data.dob2 }),
+          tin: JSON.stringify({ tin1: data.tin1, tin2: data.tin2 }),
+        };
+        const { errors } = await client.models.User.update({
+          id: userExists,
+          ...updates,
+        });
+        if (errors) console.error("Error updating user:", errors);
+      } else {
+        console.log("User does not exist.");
+      }
+    } catch (error) {
+      console.error("Failed to update user in database:", error);
+    }
+  };
+
+  const onSubmit = async (data: FormData) => {
+    console.log("Validated Data:", data);
+    updateFormData(data);
+    await updateUserInDB(data); // Assuming updateUserInDB exists
+    handleNext();
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Typography variant="h4">Account Information</Typography>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Controller
+            name="accounttype"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth>
+                <InputLabel>Account Type</InputLabel>
+                <Select
+                  {...field}
+                  value={field.value || "Individual"}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleAccountTypeChange(e);
+                  }}
+                >
+                  {ACCOUNT_TYPES.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          />
         </Grid>
+        {[
+          {
+            name: "legalname1",
+            label: "Full Legal Name",
+            placeholder: "John Doe",
+          },
+          { name: "address1", label: "Address", placeholder: "123 Main St" },
+          { name: "city1", label: "City", placeholder: "New York" },
+          {
+            name: "zip1",
+            label: "Zip Code",
+            placeholder: "10001",
+            type: "number",
+          },
+          { name: "dob1", label: "Date of Birth", placeholder: "MM-DD-YYYY" },
+          { name: "tin1", label: "TIN/SSN", placeholder: "123-45-6789" },
+        ].map(({ name, label, placeholder, type }) =>
+          renderTextField(name, label, placeholder, type)
+        )}
+        {renderSelectField("state1", "State", US_STATES)}
+        {renderSelectField("country1", "Country", OECD_COUNTRIES)}
+        {accountType === "Joint" && renderPersonalInfoFields()}
 
-        {renderPersonalInfoFields(1)}
-
-        {accountType === "Joint" && renderPersonalInfoFields(2)}
-
+        {/* Navigation Buttons */}
         <Grid item xs={12} className="flex justify-between">
           <Button
             variant="outlined"
-            color="secondary"
-            onClick={handlePrev}
-            startIcon={
-              <DirectionalIcon
-                ltrIconClass="ri-arrow-left-line"
-                rtlIconClass="ri-arrow-right-line"
-              />
-            }
+            onClick={(event) => {
+              event.preventDefault(); // Prevent default button behavior
+              handlePrevious(); // Call your function with `formData`
+            }}
           >
+            <DirectionalIcon
+              ltrIconClass="ri-arrow-left-line"
+              rtlIconClass="ri-arrow-right-line"
+            />
             Previous
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleNext}
-            endIcon={
-              <DirectionalIcon
-                ltrIconClass="ri-arrow-right-line"
-                rtlIconClass="ri-arrow-left-line"
-              />
-            }
-          >
+          <Button type="submit" variant="contained">
             Next
+            <DirectionalIcon
+              ltrIconClass="ri-arrow-right-line"
+              rtlIconClass="ri-arrow-left-line"
+            />
           </Button>
         </Grid>
       </Grid>
-    </>
+    </form>
   );
 };
 
-export default StepPersonalInfo;
+export default StepAccountDetails;

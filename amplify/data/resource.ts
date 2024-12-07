@@ -13,7 +13,15 @@ const schema = a.schema({
       lastname: a.string(),
       email: a.string(),
       phone: a.string(),
-
+      accounttype: a.string(),
+      legalname: a.string(),
+      address: a.string(),
+      city: a.string(),
+      zipcode: a.string(),
+      state: a.string(),
+      country: a.string(),
+      dob: a.string(),
+      tin: a.string()
     })
     .authorization((allow) => [allow.publicApiKey()]),
 });

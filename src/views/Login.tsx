@@ -40,11 +40,6 @@ import themeConfig from "@configs/themeConfig";
 import { useImageVariant } from "@core/hooks/useImageVariant";
 import { useSettings } from "@core/hooks/useSettings";
 
-import type { Schema } from "../../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
-
-const client = generateClient<Schema>();
-
 type ErrorType = {
   message: string[];
 };
@@ -58,9 +53,9 @@ const schema = object({
     email("Please enter a valid email address")
   ),
   password: pipe(
-    string(),
-    nonEmpty("This field is required"),
-    minLength(5, "Password must be at least 5 characters long")
+    string()
+    //nonEmpty("This field is required"),
+    //minLength(5, "Password must be at least 5 characters long")
   ),
 });
 
@@ -111,16 +106,12 @@ const Login = ({ mode }: { mode: Mode }) => {
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
     console.log(data.email);
-
-    const createUser = await client.models.User.create({
-      email: data.email,
-    });
-
-    console.log(createUser);
-
     const { nextStep: signInNextStep } = await signIn({
       username: data.email,
-      password: data.password,
+      options: {
+        AuthFlowType: "CUSTOM_WITHOUT_SRP",
+        preferredChallenge: "EMAIL_OTP",
+      },
     });
 
     if (signInNextStep.signInStep === "CONFIRM_SIGN_IN_WITH_EMAIL_CODE") {
@@ -133,25 +124,6 @@ const Login = ({ mode }: { mode: Mode }) => {
         console.log("Sign in successful!");
       }
     }
-    /** 
-    const res = await signIn({
-      username: data.email,
-      password: data.password,
-    });
-
-    if (res && res.isSignedIn) {
-      // Vars
-      const redirectURL = searchParams.get('redirectTo') ?? '/'
-
-      router.replace(redirectURL)
-    } else {
-      if (res?.nextStep) {
-        const error = null
-
-        setErrorState(error)
-      }
-    }
-    */
   };
 
   return (

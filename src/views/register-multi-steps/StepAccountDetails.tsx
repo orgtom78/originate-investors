@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -15,8 +14,6 @@ import DirectionalIcon from "@components/DirectionalIcon";
 // Import AWS Amplify data client
 import { generateClient } from "aws-amplify/data";
 import { type Schema } from "../../../amplify/data/resource";
-
-import createuser from "@data/mutations/createuser";
 
 const client = generateClient<Schema>();
 
@@ -37,39 +34,74 @@ const schema = object({
   ),
 });
 
-const StepAccountDetails = ({ handleNext }: { handleNext: () => void }) => {
+type StepProps = {
+  handleNext: () => void;
+  formData: Record<string, string>;
+  updateFormData: (data: Record<string, string>) => void;
+};
+
+const StepAccountDetails = ({ handleNext, formData, updateFormData }: StepProps) => {
   const {
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
   });
 
-  // Function to create user in the database
-  
-  const createUserInDB = async (formData: FormData) => {
+  // Prepopulate form fields with existing data
+  useEffect(() => {
+    Object.entries(formData).forEach(([key, value]) => {
+      setValue(key as keyof FormData, value || "");
+    });
+  }, [formData, setValue]);
+
+  // Function to check if user exists
+  const checkUserExists = async (email: string): Promise<boolean> => {
     try {
-      const { data, errors } = await client.models.User.create({
-        firstname: formData.firstname,
-        lastname: formData.lastname,
-        email: formData.email,
-        phone: formData.Mobile,
+      const { data: users } = await client.models.User.list({
+        filter: { email: { eq: email } },
       });
-      if (errors) {
-        console.error("Database errors:", errors);
-        return;
-      }
-      console.log("User created successfully:", data);
+      return users.length > 0; // Return true if user exists
     } catch (error) {
-      console.error("Failed to create user in database:", error);
+      console.error("Error checking if user exists:", error);
+      return false;
+    }
+  };
+
+  // Function to create user in the database
+  const createUserInDB = async (formData: FormData): Promise<void> => {
+    try {
+      const userExists = await checkUserExists(formData.email);
+
+      if (!userExists) {
+        // If user does not exist, create them
+        const { data, errors } = await client.models.User.create({
+          firstname: formData.firstname,
+          lastname: formData.lastname,
+          email: formData.email,
+          phone: formData.Mobile,
+        });
+
+        if (errors) {
+          console.error("Error creating user:", errors);
+        } else {
+          console.log("User created successfully:", data);
+        }
+      } else {
+        console.log("User already exists, skipping creation.");
+      }
+    } catch (error) {
+      console.error("Failed to create user in the database:", error);
     }
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     console.log("Validated Data:", data);
-    await createUserInDB(data); // Call function to save data
-    handleNext();
+    await createUserInDB(data); // Attempt to create the user or skip if they exist
+    updateFormData(data);
+    handleNext(); // Allow the user to proceed to the next step regardless
   };
 
   return (
@@ -85,7 +117,7 @@ const StepAccountDetails = ({ handleNext }: { handleNext: () => void }) => {
           <Controller
             name="firstname"
             control={control}
-            defaultValue=""
+            defaultValue={formData.firstname || ""}
             render={({ field }) => (
               <TextField
                 {...field}
@@ -102,7 +134,7 @@ const StepAccountDetails = ({ handleNext }: { handleNext: () => void }) => {
           <Controller
             name="lastname"
             control={control}
-            defaultValue=""
+            defaultValue={formData.lastname || ""}
             render={({ field }) => (
               <TextField
                 {...field}
@@ -119,7 +151,7 @@ const StepAccountDetails = ({ handleNext }: { handleNext: () => void }) => {
           <Controller
             name="email"
             control={control}
-            defaultValue=""
+            defaultValue={formData.email || ""}
             render={({ field }) => (
               <TextField
                 {...field}
@@ -136,7 +168,7 @@ const StepAccountDetails = ({ handleNext }: { handleNext: () => void }) => {
           <Controller
             name="Mobile"
             control={control}
-            defaultValue=""
+            defaultValue={formData.Mobile || ""}
             render={({ field }) => (
               <TextField
                 {...field}
@@ -156,19 +188,6 @@ const StepAccountDetails = ({ handleNext }: { handleNext: () => void }) => {
           />
         </Grid>
         <Grid item xs={12} className="flex justify-between">
-          <Button
-            disabled
-            variant="outlined"
-            color="secondary"
-            startIcon={
-              <DirectionalIcon
-                ltrIconClass="ri-arrow-left-line"
-                rtlIconClass="ri-arrow-right-line"
-              />
-            }
-          >
-            Previous
-          </Button>
           <Button
             type="submit"
             variant="contained"
