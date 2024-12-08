@@ -87,9 +87,8 @@ const RegisterMultiSteps = () => {
     <div className="flex bs-full justify-between items-center">
       <div className="flex bs-full items-center justify-center is-[450px] max-lg:hidden">
         <img
-          src="/images/illustrations/characters/2.png"
+          src="/images/pages/register.jpg"
           alt="multi-steps-character"
-          className="mlb-12 bs-auto max-bs-[555px] max-is-full"
         />
       </div>
       <div className="flex flex-1 justify-center items-center bs-full bg-backgroundPaper">

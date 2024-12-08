@@ -11,7 +11,8 @@ import styled from '@emotion/styled'
 import type { VerticalNavContextProps } from '@menu/contexts/verticalNavContext'
 
 // Component Imports
-import MaterializeLogo from '@core/svg/Logo'
+//import MaterializeLogo from '@core/svg/Logo'
+import OriginateLogo from '@core/svg/OCLogo'
 
 // Config Imports
 import themeConfig from '@configs/themeConfig'
@@ -73,7 +74,7 @@ const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
 
   return (
     <div className='flex items-center min-bs-[24px]'>
-      <MaterializeLogo />
+      <OriginateLogo />
       <LogoText
         color={color}
         ref={logoTextRef}

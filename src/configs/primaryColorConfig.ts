@@ -9,15 +9,15 @@ export type PrimaryColorConfig = {
 const primaryColorConfig: PrimaryColorConfig[] = [
   {
     name: 'primary-1',
-    light: '#8589FF',
-    main: '#666CFF',
-    dark: '#5C61E6'
+    main: "#071A52", // Deep Blue for main primary color
+    light: "#086972", // Secondary blue shade
+    dark: "#071A52", // Ensure contrast
   },
   {
     name: 'primary-2',
-    light: '#49CCB5',
-    main: '#06B999',
-    dark: '#048770'
+    main: "#17B978", // Vibrant green for secondary color
+    light: "#A7FF83", // Lighter green for highlights
+    dark: "#086972", // Complementary dark shade
   },
   {
     name: 'primary-3',

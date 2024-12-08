@@ -12,8 +12,8 @@ import '@assets/iconify-icons/generated-icons.css'
 
 
 export const metadata = {
-  title: 'Materialize - Material Next.js Admin Template',
-  description: 'Materialize - Material Next.js Admin Template'
+  title: 'Originate Capital - Investor',
+  description: 'Originate Capital - Investor Registration'
 }
 
 const RootLayout = ({ children }: ChildrenType) => {
