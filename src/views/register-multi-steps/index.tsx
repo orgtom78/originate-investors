@@ -79,6 +79,8 @@ const RegisterMultiSteps = () => {
       key="billing"
       handlePrev={handlePrev}
       formData={formData.billingDetails}
+      accountDetails={formData.accountDetails}
+      personalInfo={formData.personalInfo}
       updateFormData={(data) => updateFormData("billingDetails", data)}
     />,
   ];

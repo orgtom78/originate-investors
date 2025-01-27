@@ -8,8 +8,8 @@ import Register from '@views/register-multi-steps'
 import { getServerMode } from '@core/utils/serverHelpers'
 
 export const metadata: Metadata = {
-  title: 'Register',
-  description: 'Register and subscribe'
+  title: 'Register and Subscribe',
+  description: 'Register and Subscribe'
 }
 
 const LoginPage = () => {

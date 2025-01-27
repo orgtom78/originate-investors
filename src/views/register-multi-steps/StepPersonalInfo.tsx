@@ -10,12 +10,14 @@ import {
   MenuItem,
   SelectChangeEvent,
 } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
 import { Controller, useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { object, pipe, string, nonEmpty } from "valibot";
+import { object, pipe, string, nonEmpty, optional } from "valibot";
 import DirectionalIcon from "@components/DirectionalIcon";
 import { generateClient } from "aws-amplify/data";
 import { type Schema } from "../../../amplify/data/resource";
+import type { SubmitHandler } from "react-hook-form";
 
 const US_STATES = [
   "Alabama",
@@ -123,16 +125,17 @@ const schema = object({
   zip1: pipe(string(), nonEmpty("Zip Code is required")),
   dob1: pipe(string(), nonEmpty("Date of Birth is required")),
   tin1: pipe(string(), nonEmpty("TIN or SSN is required")),
+  amount: pipe(string(), nonEmpty("Amount is required")),
   state1: pipe(string(), nonEmpty("State is required")),
   country1: pipe(string(), nonEmpty("Country is required")),
-  legalname2: pipe(string()),
-  address2: pipe(string()),
-  city2: pipe(string()),
-  zip2: pipe(string()),
-  dob2: pipe(string()),
-  tin2: pipe(string()),
-  state2: pipe(string()),
-  country2: pipe(string()),
+  legalname2: optional(string()),
+  address2: optional(string()),
+  city2: optional(string()),
+  zip2: optional(string()),
+  dob2: optional(string()),
+  tin2: optional(string()),
+  state2: optional(string()),
+  country2: optional(string()),
 });
 
 type FormData = {
@@ -160,7 +163,26 @@ const StepAccountDetails = ({
     getValues,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: formData,
+    defaultValues: {
+      accounttype: formData.accounttype || "Individual",
+      legalname1: formData.legalname1 || "",
+      address1: formData.address1 || "",
+      city1: formData.city1 || "",
+      zip1: formData.zip1 || "",
+      dob1: formData.dob1 || "",
+      tin1: formData.tin1 || "",
+      amount: formData.amount || "",
+      state1: formData.state1 || "",
+      country1: formData.country1 || "",
+      legalname2: formData.legalname2 || "",
+      address2: formData.address2 || "",
+      city2: formData.city2 || "",
+      zip2: formData.zip2 || "",
+      dob2: formData.dob2 || "",
+      tin2: formData.tin2 || "",
+      state2: formData.state2 || "",
+      country2: formData.country2 || "",
+    },
     resolver: valibotResolver(schema),
   });
 
@@ -221,7 +243,7 @@ const StepAccountDetails = ({
         name={name}
         control={control}
         render={({ field }) => (
-          <FormControl fullWidth>
+          <FormControl fullWidth error={!!errors[name]}>
             <InputLabel>{label}</InputLabel>
             <Select {...field} value={field.value || ""}>
               {options.map((option) => (
@@ -230,6 +252,11 @@ const StepAccountDetails = ({
                 </MenuItem>
               ))}
             </Select>
+            {errors[name] && (
+              <Typography variant="body2" color="error">
+                {errors[name]?.message}
+              </Typography>
+            )}
           </FormControl>
         )}
       />
@@ -262,60 +289,40 @@ const StepAccountDetails = ({
     </>
   );
 
-  const checkUserExists = async (email: string): Promise<string | null> => {
-    try {
-      const { data: users } = await client.models.User.list({
-        filter: { email: { eq: email } },
-      });
-      return users.length > 0 ? users[0].id : null;
-    } catch (error) {
-      console.error("Error checking user existence:", error);
-      return null;
-    }
-  };
-
   const updateUserInDB = async (data: FormData): Promise<void> => {
     try {
-      const userExists = await checkUserExists(accountDetails.email);
-      if (userExists) {
-        const updates = {
-          accounttype: data.accounttype,
-          legalname: JSON.stringify({
-            legalname1: data.legalname1,
-            legalname2: data.legalname2,
-          }),
-          address: JSON.stringify({
-            address1: data.address1,
-            address2: data.address2,
-          }),
-          city: JSON.stringify({ city1: data.city1, city2: data.city2 }),
-          zipcode: JSON.stringify({ zip1: data.zip1, zip2: data.zip2 }),
-          state: JSON.stringify({ state1: data.state1, state2: data.state2 }),
-          country: JSON.stringify({
-            country1: data.country1,
-            country2: data.country2,
-          }),
-          dob: JSON.stringify({ dob1: data.dob1, dob2: data.dob2 }),
-          tin: JSON.stringify({ tin1: data.tin1, tin2: data.tin2 }),
-        };
-        const { errors } = await client.models.User.update({
-          id: userExists,
-          ...updates,
+      const userExists = await client.models.User.list({
+        filter: { email: { eq: accountDetails.email } },
+      });
+      if (userExists.data && userExists.data.length > 0) {
+        const { id } = userExists.data[0];
+        await client.models.User.update({
+          id,
+          ...data,
         });
-        if (errors) console.error("Error updating user:", errors);
-      } else {
-        console.log("User does not exist.");
       }
     } catch (error) {
-      console.error("Failed to update user in database:", error);
+      console.error("Failed to update user:", error);
     }
   };
 
-  const onSubmit = async (data: FormData) => {
-    console.log("Validated Data:", data);
-    updateFormData(data);
-    await updateUserInDB(data); // Assuming updateUserInDB exists
-    handleNext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit: SubmitHandler<FormData> = async (
+    data: Record<string, string>
+  ) => {
+    setIsSubmitting(true);
+    try {
+      console.log("Validated Data:", data);
+      await updateUserInDB(data);
+      updateFormData(data);
+      handleNext(); // Proceed to the next step
+    } catch (error) {
+      console.error("Submission failed:", error);
+      // Optionally show an error notification or message
+    } finally {
+      setIsSubmitting(false);
+    } // Allow the user to proceed to the next step regardless
   };
 
   return (
@@ -368,6 +375,28 @@ const StepAccountDetails = ({
         )}
         {renderSelectField("state1", "State", US_STATES)}
         {renderSelectField("country1", "Country", OECD_COUNTRIES)}
+        <Grid item xs={12}>
+          <Controller
+            name="amount"
+            control={control}
+            defaultValue={formData.amount || ""}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label="Subscription Amount"
+                placeholder="100,000"
+                error={!!errors.amount}
+                helperText={errors.amount?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">US $</InputAdornment>
+                  ),
+                }}
+              />
+            )}
+          />
+        </Grid>
         {accountType === "Joint" && renderPersonalInfoFields()}
 
         {/* Navigation Buttons */}
@@ -385,8 +414,8 @@ const StepAccountDetails = ({
             />
             Previous
           </Button>
-          <Button type="submit" variant="contained">
-            Next
+          <Button type="submit" variant="contained" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Next"}
             <DirectionalIcon
               ltrIconClass="ri-arrow-right-line"
               rtlIconClass="ri-arrow-left-line"

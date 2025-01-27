@@ -5,209 +5,40 @@ import type { ChangeEvent } from "react";
 // MUI Imports
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+
 import Typography from "@mui/material/Typography";
-import type { TypographyProps } from "@mui/material/Typography";
-import { styled } from "@mui/material/styles";
+
 
 // Component Imports
-import CustomInputVertical from "@core/components/custom-inputs/Vertical";
 import DirectionalIcon from "@components/DirectionalIcon";
-import type { CustomInputVerticalData } from "@core/components/custom-inputs/types";
-
-// Styled Components
-const Content = styled(Typography, {
-  name: "MuiCustomInputVertical",
-  slot: "content",
-})<TypographyProps>(({ theme }) => ({
-  ...theme.typography.body2,
-  textAlign: "center",
-}));
-
-// Vars
-const customInputData: CustomInputVerticalData[] = [
-  {
-    title: "Basic",
-    value: "basic",
-    content: (
-      <Content
-        component="div"
-        className="flex justify-center items-center flex-col bs-full gap-2"
-      >
-        <Typography variant="body2" className="mlb-auto">
-          A simple start for start ups & Students
-        </Typography>
-        <div className="flex items-baseline">
-          <Typography
-            component="sup"
-            variant="body2"
-            className="self-start"
-            color="primary"
-          >
-            $
-          </Typography>
-          <Typography component="span" variant="h4" color="primary">
-            0
-          </Typography>
-          <Typography
-            color="text.disabled"
-            component="sub"
-            variant="body2"
-            className="self-baseline"
-          >
-            /month
-          </Typography>
-        </div>
-      </Content>
-    ),
-    isSelected: true,
-  },
-  {
-    title: "Standard",
-    value: "standard",
-    content: (
-      <Content
-        component="div"
-        className="flex justify-center items-center flex-col bs-full gap-2"
-      >
-        <Typography variant="body2" className="mlb-auto">
-          For small to medium businesses
-        </Typography>
-        <div className="flex items-baseline">
-          <Typography
-            component="sup"
-            variant="body2"
-            className="self-start"
-            color="primary"
-          >
-            $
-          </Typography>
-          <Typography component="span" variant="h4" color="primary">
-            99
-          </Typography>
-          <Typography
-            color="text.disabled"
-            component="sub"
-            variant="body2"
-            className="self-baseline"
-          >
-            /month
-          </Typography>
-        </div>
-      </Content>
-    ),
-  },
-  {
-    title: "Enterprise",
-    value: "enterprise",
-    content: (
-      <Content
-        component="div"
-        className="flex justify-center items-center flex-col bs-full"
-      >
-        <Typography className="mlb-auto">
-          Solution for enterprise & organizations
-        </Typography>
-        <div className="flex items-baseline">
-          <Typography
-            component="sup"
-            variant="body2"
-            className="self-start"
-            color="primary"
-          >
-            $
-          </Typography>
-          <Typography component="span" variant="h4" color="primary">
-            499
-          </Typography>
-          <Typography
-            color="text.disabled"
-            component="sub"
-            variant="body2"
-            className="self-baseline"
-          >
-            /month
-          </Typography>
-        </div>
-      </Content>
-    ),
-  },
-];
 
 type StepProps = {
   handlePrev?: () => void; // Optional for steps without a "Previous" button
   formData: Record<string, string>;
+  accountDetails: Record<string, string>;
+  personalInfo: Record<string, string>;
   updateFormData: (data: Record<string, string>) => void;
 };
 
+
 const StepBillingDetails = ({
   handlePrev,
-  formData,
-  updateFormData,
+  accountDetails,
+  personalInfo
 }: StepProps) => {
-  const initialSelectedOption: string = customInputData.filter(
-    (item) => item.isSelected
-  )[customInputData.filter((item) => item.isSelected).length - 1].value;
-
-  // States
-  const [selectedOption, setSelectedOption] = useState<string>(
-    initialSelectedOption
-  );
-
-  const handleOptionChange = (prop: string | ChangeEvent<HTMLInputElement>) => {
-    if (typeof prop === "string") {
-      setSelectedOption(prop);
-    } else {
-      setSelectedOption((prop.target as HTMLInputElement).value);
-    }
-  };
+  console.log(personalInfo.legalname1)
+  const pageUrl = `https://sign.zoho.com/signform?form_link=234b4d535f495623766485fd8f9b0a494badf5912a647e27fa4ea75fca4e71d1e8392e9d1ff7bfdf033debebbafe24b81835e0ed41f119ad62e39c466b91d04d2fa5f4fecbdb24a9#&Name=${personalInfo.legalname1}&Amount=${personalInfo.legalname1}&Investor-Name=${personalInfo.legalname1}&Investor-State=${personalInfo.state1}&Investor-Email=${accountDetails.email}&Investor-Address=${personalInfo.address1}&Investor-Citizenship=${personalInfo.country1}&Investor-Name-2=${personalInfo.legalname1}&Investor-Street-2=${personalInfo.address1}&State=${personalInfo.state1}&City=${personalInfo.city1}&Zip=${personalInfo.zip1}`;
 
   return (
     <>
       <div className="mbe-5">
         <Typography variant="h4" className="mbe-1">
-          Select Plan
+          Subscription Agreement
         </Typography>
-        <Typography>Select plan as per your requirement</Typography>
       </div>
-      <Grid container spacing={5}>
-        {customInputData.map((item, index) => (
-          <CustomInputVertical
-            type="radio"
-            key={index}
-            data={item}
-            gridProps={{ xs: 12, sm: 4 }}
-            selected={selectedOption}
-            name="custom-radios-basic"
-            handleChange={handleOptionChange}
-          />
-        ))}
-      </Grid>
-      <div className="mbs-6 md:mbs-12 mbe-6">
-        <Typography variant="h4" className="mbe-1">
-          Payment Information
-        </Typography>
-        <Typography>Enter your card information</Typography>
-      </div>
-      <Grid container spacing={5}>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Card Number"
-            placeholder="1234 1234 1234 1234"
-            value={formData.cardnumber || ""}
-            onChange={(e) => updateFormData({ cardnumber: e.target.value })}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField fullWidth label="Name on Card" placeholder="John Doe" />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField fullWidth label="Expiry Date" placeholder="MM/YY" />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField fullWidth label="CVV" placeholder="123" />
-        </Grid>
+        <div>
+          <iframe src={pageUrl} name="SignForm" scrolling="yes" width="100%" height="100%"></iframe>
+        </div>
         <Grid item xs={12} className="flex justify-between">
           <Button
             variant="outlined"
@@ -231,7 +62,6 @@ const StepBillingDetails = ({
             Submit
           </Button>
         </Grid>
-      </Grid>
     </>
   );
 };

@@ -40,7 +40,11 @@ type StepProps = {
   updateFormData: (data: Record<string, string>) => void;
 };
 
-const StepAccountDetails = ({ handleNext, formData, updateFormData }: StepProps) => {
+const StepAccountDetails = ({
+  handleNext,
+  formData,
+  updateFormData,
+}: StepProps) => {
   const {
     control,
     handleSubmit,
@@ -77,12 +81,18 @@ const StepAccountDetails = ({ handleNext, formData, updateFormData }: StepProps)
 
       if (!userExists) {
         // If user does not exist, create them
-        const { data, errors } = await client.models.User.create({
-          firstname: formData.firstname,
-          lastname: formData.lastname,
-          email: formData.email,
-          phone: formData.Mobile,
-        });
+        const { data, errors } = await client.models.User.create(
+          {
+            firstname: formData.firstname,
+            lastname: formData.lastname,
+            email: formData.email,
+            phone: formData.Mobile,
+          },
+
+          {
+            authMode: "apiKey",
+          }
+        );
 
         if (errors) {
           console.error("Error creating user:", errors);
