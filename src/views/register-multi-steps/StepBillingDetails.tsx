@@ -31,13 +31,22 @@ const StepBillingDetails = ({
 
   return (
     <>
-      <div className="mbe-5">
-        <Typography variant="h4" className="mbe-1">
-          Subscription Agreement
-        </Typography>
+      <div className="w-full flex flex-col space-y-4">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Subscription Agreement</h2>
       </div>
-        <div>
-          <iframe src={pageUrl} name="SignForm" scrolling="yes" width="100%" height="100%"></iframe>
+
+      {/* Document Container */}
+      <div className="w-full flex flex-col space-y-4">
+        {/* iFrame wrapper with fixed height */}
+        <div className="w-full" style={{ height: "600px" }}>
+          <iframe 
+            src={pageUrl}
+            name="SignForm"
+            className="w-full h-full border rounded-lg bg-white"
+          />
+        </div>
         </div>
         <Grid item xs={12} className="flex justify-between">
           <Button
@@ -62,7 +71,8 @@ const StepBillingDetails = ({
             Submit
           </Button>
         </Grid>
-    </>
+      </div>
+      </>
   );
 };
 
